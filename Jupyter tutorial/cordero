@@ -1,0 +1,83 @@
+#!/usr/bin/env python
+# coding: utf-8
+
+# In[ ]:
+
+
+def layernorm_forward(x, gamma, beta, ln_param):
+    """
+    Forward pass for layer normalization.
+
+    During both training and test-time, the incoming data is normalized per data-point,
+    before being scaled by gamma and beta parameters identical to that of batch normalization.
+    
+    Note that in contrast to batch normalization, the behavior during train and test-time for
+    layer normalization are identical, and we do not need to keep track of running averages
+    of any sort.
+
+    Input:
+    - x: Data of shape (N, D)
+    - gamma: Scale parameter of shape (D,)
+    - beta: Shift paremeter of shape (D,)
+    - ln_param: Dictionary with the following keys:
+        - eps: Constant for numeric stability
+
+    Returns a tuple of:
+    - out: of shape (N, D)
+    - cache: A tuple of values needed in the backward pass
+    """
+    out, cache = None, None
+    eps = ln_param.get("eps", 1e-5)
+    ###########################################################################
+    # TODO: Implement the training-time forward pass for layer norm.          #
+    # Normalize the incoming data, and scale and  shift the normalized data   #
+    #  using gamma and beta.                                                  #
+    # HINT: this can be done by slightly modifying your training-time         #
+    # implementation of  batch normalization, and inserting a line or two of  #
+    # well-placed code. In particular, can you think of any matrix            #
+    # transformations you could perform, that would enable you to copy over   #
+    # the batch norm code and leave it almost unchanged?                      #
+    ###########################################################################
+    # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
+
+    # Some important dimensions
+    N, D = x.shape
+
+    # Transpose input x to take advantage of all the Batchnorm Code
+    xT = np.transpose(x)
+
+    # Compute Layernorm single-example-wise Mean over all its features -----
+    layernorm_mus = np.sum(xT, axis = 0) / D
+
+    # Compute Layernorm single-example-wise Variance over all its features -
+    layernorm_sigmas_2 = np.sum((xT - layernorm_mus) ** 2, axis = 0) / D
+
+    # Compute Layernorm single-example-wise Standard Deviation -------------
+    layernorm_std = np.sqrt(layernorm_sigmas_2 + eps)
+
+    # Normalize incoming features over features in single example ----------
+    x_houseT = (xT - layernorm_mus) / layernorm_std
+
+    # Transposing x_house back to scale and shift as normal ----------------
+    x_house = np.transpose(x_houseT)
+
+    # Scale and Shift output -----------------------------------------------
+    out = (gamma * x_house) + beta
+
+    # Store Cache ----------------------------------------------------------
+    cache = {}
+        
+    cache['x']                  = x
+    cache['gamma']              = gamma
+    cache['eps']                = eps       
+    cache['layernorm_mus']      = layernorm_mus
+    cache['layernorm_sigmas_2'] = layernorm_sigmas_2
+    cache['layernorm_std']      = layernorm_std
+    cache['x_house']            = x_house
+
+    # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
+    ###########################################################################
+    #                             END OF YOUR CODE                            #
+    ###########################################################################
+    return out, cache
+
