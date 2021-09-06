@@ -1,0 +1,13 @@
+# Folders to ignore
+Course slides/
+Course videos/
+Personal Notes/
+Project/
+
+# Files to ignore
+cifar-10-python.tar.gz
+backprop example.xlsx
+Practice workbook.ipynb
+
+# Folders within Assignment 3 to ignore
+Assignment3/cs231n/datasets/coco_captioning
